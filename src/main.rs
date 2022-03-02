@@ -32,7 +32,9 @@ struct GameState{
     last_jump: time::Instant,
     obstacles: Vec<Obstacle>,
     last_obstacle: time::Instant,
-    game_over: bool
+    game_over: bool,
+    score: u16,
+    last_score: time::Instant
 }
 
 impl GameState {
@@ -51,12 +53,15 @@ impl GameState {
         let last_update = time::Instant::now();
         let last_jump = time::Instant::now();
         let last_obstacle = time::Instant::now();
+        let last_score = time::Instant::now();
 
         let obstacles: Vec<Obstacle> = Vec::new();
 
         let game_over: bool = false;
 
-        Ok(GameState{bird, last_update,last_jump, obstacles, last_obstacle, game_over})
+        let score: u16 = 0;
+
+        Ok(GameState{bird, last_update,last_jump, obstacles, last_obstacle, game_over, score, last_score})
     }
 
 }
@@ -90,6 +95,11 @@ impl State for GameState {
                         }, 
                     height: rng.gen_range(200.0 .. 800.0)
                 })
+            }
+
+            if self.last_score.elapsed().as_millis() > 250 {
+                self.score = self.score + 1;
+                self.last_score = time::Instant::now();
             }
 
             for obs in self.obstacles.iter_mut(){
@@ -144,6 +154,11 @@ impl State for GameState {
                     Orientation::Top => 0.0
                 }));
         }
+
+        // Score text
+        let mut score_text = Text::new(u16::to_string(&self.score),
+        Font::vector(ctx, "./fonts/OpenSans-Regular.ttf", 32.0)?);
+        score_text.draw(ctx, Vec2::new(25.0,25.0));
 
         let mut game_over_text = Text::new("Game over, man!",
             Font::vector(ctx, "./fonts/OpenSans-Regular.ttf", 32.0)?);
