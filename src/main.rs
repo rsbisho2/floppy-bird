@@ -77,7 +77,6 @@ impl State for GameState {
 
                 self.bird.velocity += 1.0;
                 self.last_jump = time::Instant::now();
-                println!("Jump!");
             }
 
             if self.last_obstacle.elapsed().as_secs() > 3 {
@@ -100,19 +99,10 @@ impl State for GameState {
 
             self.obstacles.retain(|x| x.position>0.0);
 
-
-            // todo: I hate this
-            for obs in self.obstacles.iter_mut(){
-                if (self.bird.position.0 >= obs.position &&
-                    self.bird.position.0 <= obs.position + 120.0 &&
-                    ((self.bird.position.1 <= obs.height && obs.orientation == Orientation::Top) ||
-                    (self.bird.position.1 >= obs.height && obs.orientation == Orientation::Bottom))) ||
-                    self.bird.position.1 > 1280.0 || self.bird.position.1 < 0.0
-                    {
-                        self.game_over = true;
-                    }
+            // check for bird out of bounds
+            if self.bird.position.1 < 0.0 || self.bird.position.1 > 1280.0{
+                self.game_over = true;
             }
-            
 
         }
         self.last_update = time::Instant::now();
@@ -124,6 +114,21 @@ impl State for GameState {
         graphics::clear(ctx, Color::rgb(0.0, 0.0, 0.1));
 
         self.bird.bird_sprite.draw(ctx, Vec2::new(self.bird.position.0 as f32,1280.0 - self.bird.position.1 as f32));
+
+        let mut rects : Vec<Rectangle> = Vec::new(); 
+        for obs in self.obstacles.iter(){
+            rects.push(Rectangle::new(obs.position,
+                match obs.orientation {
+                    Orientation::Bottom => 1280.0 - obs.height,
+                    Orientation::Top => 0.0
+                },
+            120.0,
+        obs.height));
+        }
+
+        if rects.iter().any(|f| f.contains_point(Vec2::new(self.bird.position.0, self.bird.position.1))){
+            self.game_over = true;
+        }
 
         for obs in self.obstacles.iter_mut(){
             let obs_sprite : Mesh = GeometryBuilder::new()
