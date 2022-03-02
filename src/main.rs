@@ -121,7 +121,23 @@ impl State for GameState {
                 self.game_over = true;
             }
 
+            
+
         }
+
+        if input::is_key_down(ctx, Key::Space) &&
+                self.game_over{
+                    self.obstacles.clear();
+                    self.score = 0;
+                    self.bird.position.1 = 640.0;    
+                    self.game_over = false;
+                    self.last_jump = time::Instant::now();
+                    self.last_obstacle = time::Instant::now();
+                    self.last_score = time::Instant::now();
+                    self.bird.velocity = 0.0;
+                    
+                }
+
         self.last_update = time::Instant::now();
         Ok(())
     }
