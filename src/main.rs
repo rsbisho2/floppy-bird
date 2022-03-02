@@ -28,7 +28,8 @@ struct GameState{
     last_obstacle: time::Instant,
     game_over: bool,
     score: u16,
-    last_score: time::Instant
+    last_score: time::Instant,
+    high_score: u16
 }
 /* 
 impl ToString for Rectangle{
@@ -62,7 +63,9 @@ impl GameState {
 
         let score: u16 = 0;
 
-        Ok(GameState{bird, last_update,last_jump, obstacles, last_obstacle, game_over, score, last_score})
+        let high_score = 0;
+
+        Ok(GameState{bird, last_update,last_jump, obstacles, last_obstacle, game_over, score, last_score, high_score})
     }
 
 }
@@ -103,6 +106,10 @@ impl State for GameState {
             if self.last_score.elapsed().as_millis() > 250 {
                 self.score = self.score + 1;
                 self.last_score = time::Instant::now();
+
+                if self.score > self.high_score {
+                    self.high_score = self.score;
+                }
             }
 
             for obs in self.obstacles.iter_mut(){
@@ -165,9 +172,13 @@ impl State for GameState {
         }
 
         // Score text
-        let mut score_text = Text::new(u16::to_string(&self.score),
+        let mut score_text = Text::new("Score: ".to_owned() + &u16::to_string(&self.score),
         Font::vector(ctx, "./fonts/OpenSans-Regular.ttf", 32.0)?);
         score_text.draw(ctx, Vec2::new(25.0,25.0));
+
+        let mut high_score_text = Text::new("High Score: ".to_owned() + &u16::to_string(&self.high_score).to_owned(),
+        Font::vector(ctx, "./fonts/OpenSans-Regular.ttf", 32.0)?);
+        high_score_text.draw(ctx, Vec2::new(25.0,60.0));
 
         let mut game_over_text = Text::new("Game over, man!",
             Font::vector(ctx, "./fonts/OpenSans-Regular.ttf", 32.0)?);
