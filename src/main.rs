@@ -20,39 +20,24 @@ enum Orientation{
     Bottom
 }
 
-struct Obstacle {
-    position: f32,
-    orientation: Orientation,
-    height: f32
-
-}
 struct GameState{
     bird: Bird,
     last_update: time::Instant,
     last_jump: time::Instant,
-    obstacles: Vec<Obstacle>,
+    obstacles: Vec<Rectangle>,
     last_obstacle: time::Instant,
     game_over: bool,
     score: u16,
     last_score: time::Instant
 }
-
-impl ToString for Obstacle{
+/* 
+impl ToString for Rectangle{
     fn to_string(&self) -> String {
-        let mut result : String;
-        result = self.position.to_string();
-        result = result + " ";
-        result = result + match &self.orientation {
-            Orientation::Top => "TOP",
-            Orientation::Bottom => "BOTTOM"
-        };
-        result = result + " ";
-        result = result + &f32::to_string(&self.height);
-
-        return result;
+        return "x:"+self.x + " y:" + self.y 
+        + " w:" + self.width + " h:" + self.height
     }
 }
-
+*/
 impl GameState {
     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
 
@@ -71,7 +56,7 @@ impl GameState {
         let last_obstacle = time::Instant::now();
         let last_score = time::Instant::now();
 
-        let obstacles: Vec<Obstacle> = Vec::new();
+        let obstacles: Vec<Rectangle> = Vec::new();
 
         let game_over: bool = false;
 
@@ -102,14 +87,16 @@ impl State for GameState {
 
             if self.last_obstacle.elapsed().as_secs() > 3 {
                 self.last_obstacle = time::Instant::now();
-                self.obstacles.push(Obstacle{
-                    position: 1240.0,
-                    orientation:
+                let obs_height = rng.gen_range(200.0 .. 800.0);
+                self.obstacles.push(Rectangle{
+                    x: 1280.0,
+                    y:
                         match rng.gen_bool(0.5) {
-                            true => Orientation::Bottom,
-                            false => Orientation::Top
+                            true => 1280.0 - obs_height,
+                            false => 0.0
                         }, 
-                    height: rng.gen_range(200.0 .. 800.0)
+                    height: obs_height,
+                    width: 120.0
                 })
             }
 
@@ -119,29 +106,18 @@ impl State for GameState {
             }
 
             for obs in self.obstacles.iter_mut(){
-                obs.position -= self.last_update.elapsed().as_millis() as f32 * 0.1;
+                obs.x -= self.last_update.elapsed().as_millis() as f32 * 0.1;
 
             }
 
-            self.obstacles.retain(|x| x.position>0.1);
+            self.obstacles.retain(|r| r.x>0.1);
 
             // check for bird out of bounds
             if self.bird.position.1 < 0.0 || self.bird.position.1 > 1280.0{
                 self.game_over = true;
             }
 
-            let mut rects : Vec<Rectangle> = Vec::new(); 
-            for obs in self.obstacles.iter(){
-                rects.push(Rectangle::new(obs.position,
-                    match obs.orientation {
-                        Orientation::Bottom => 1280.0 - obs.height,
-                        Orientation::Top => 0.0
-                    },
-                120.0,
-            obs.height));
-            }
-
-            if rects.iter().any(|f| f.contains_point(Vec2::new(self.bird.position.0, self.bird.position.1))){
+            if self.obstacles.iter().any(|f| f.contains_point(Vec2::new(self.bird.position.0, 1280.0-self.bird.position.1))){
                 self.game_over = true;
             }
 
@@ -163,16 +139,13 @@ impl State for GameState {
         for obs in self.obstacles.iter_mut(){
             let obs_sprite : Mesh = GeometryBuilder::new()
                 .set_color(Color::rgb(0.392, 0.584, 0.929))
-                .rectangle(ShapeStyle::Fill, Rectangle::new(0.0, 0.0, 120.0, obs.height))?
+                .rectangle(ShapeStyle::Fill, Rectangle::new(0.0, 0.0, obs.width, obs.height))?
             .build_mesh(ctx)?;
 
 
             obs_sprite.draw(ctx, Vec2::new(
-                obs.position,
-                match obs.orientation {
-                    Orientation::Bottom => 1280.0 - obs.height,
-                    Orientation::Top => 0.0
-                }));
+                obs.x,
+                obs.y));
         }
 
         // Score text
@@ -186,7 +159,7 @@ impl State for GameState {
             game_over_text.draw(ctx, Vec2::new(300.0,300.0));
 
         }
-
+        /*
         let mut obs_loc:f32 = 40.0;
         for obs in self.obstacles.iter(){
             let mut obs_text = Text::new(obs.to_string(),
@@ -195,7 +168,7 @@ impl State for GameState {
             obs_text.draw(ctx, Vec2::new(25.0,obs_loc));
 
         }
-
+        */
         let mut bird_pos_text = Text::new(self.bird.position.0.to_string() + ", " + &self.bird.position.1.to_string() ,
         Font::vector(ctx, "./fonts/OpenSans-Regular.ttf", 32.0)?);
         bird_pos_text.draw(ctx, Vec2::new(1000.0,40.0));
