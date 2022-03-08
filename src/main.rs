@@ -7,12 +7,9 @@ use rand::Rng;
 use std::time;
 use tetra::input::{self, Key};
 
-struct Bird{
-    position: (f32, f32),
-    velocity: f32,
-    acceleration: f32,
-    bird_sprite: Mesh
-}
+mod bird;
+use crate::bird::Bird;
+
 
 #[derive(PartialEq)]
 enum Orientation{
@@ -153,8 +150,7 @@ impl State for GameState {
 
         graphics::clear(ctx, Color::rgb(0.0, 0.0, 0.1));
 
-        self.bird.bird_sprite.draw(ctx, Vec2::new(self.bird.position.0 as f32,1280.0 - self.bird.position.1 as f32));
-
+        self.bird.draw(ctx);
         
 
         
