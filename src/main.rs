@@ -13,10 +13,13 @@ use crate::bird::Bird;
 mod background;
 use crate::background::Background;
 
+mod obstacle;
+use crate::obstacle::Obstacle;
+
 struct GameState{
     bird: Bird,
     last_update: time::Instant,
-    obstacles: Vec<Rectangle>,
+    obstacles: Vec<Obstacle>,
     last_obstacle: time::Instant,
     game_over: bool,
     score: u16,
@@ -34,7 +37,7 @@ impl GameState {
         let last_obstacle = time::Instant::now();
         let last_score = time::Instant::now();
 
-        let obstacles: Vec<Rectangle> = Vec::new();
+        let obstacles: Vec<Obstacle> = Vec::new();
 
         let game_over: bool = false;
 
@@ -64,18 +67,8 @@ impl State for GameState {
             }
 
             if self.last_obstacle.elapsed().as_secs() > 3 {
+                Obstacle::add_obstacle(&mut self.obstacles);
                 self.last_obstacle = time::Instant::now();
-                let obs_height = rng.gen_range(200.0 .. 800.0);
-                self.obstacles.push(Rectangle{
-                    x: 1280.0,
-                    y:
-                        match rng.gen_bool(0.5) {
-                            true => 1280.0 - obs_height,
-                            false => 0.0
-                        }, 
-                    height: obs_height,
-                    width: 120.0
-                })
             }
 
             if self.last_score.elapsed().as_millis() > 250 {
@@ -88,18 +81,18 @@ impl State for GameState {
             }
 
             for obs in self.obstacles.iter_mut(){
-                obs.x -= self.last_update.elapsed().as_millis() as f32 * 0.1;
+                obs.update();
 
             }
 
-            self.obstacles.retain(|r| r.x>0.1);
+            self.obstacles.retain(|r| r.rect.x>0.1);
 
             // check for bird out of bounds
             if self.bird.position.1 < 0.0 || self.bird.position.1 > 1280.0{
                 self.game_over = true;
             }
 
-            if self.obstacles.iter().any(|f| f.contains_point(Vec2::new(self.bird.position.0, 1280.0-self.bird.position.1))){
+            if self.obstacles.iter().any(|f| f.rect.contains_point(Vec2::new(self.bird.position.0, 1280.0-self.bird.position.1))){
                 self.game_over = true;
             }
 
@@ -130,15 +123,7 @@ impl State for GameState {
         self.bird.draw(ctx);
 
         for obs in self.obstacles.iter_mut(){
-            let obs_sprite : Mesh = GeometryBuilder::new()
-                .set_color(Color::rgb(0.392, 0.584, 0.929))
-                .rectangle(ShapeStyle::Fill, Rectangle::new(0.0, 0.0, obs.width, obs.height))?
-            .build_mesh(ctx)?;
-
-
-            obs_sprite.draw(ctx, Vec2::new(
-                obs.x,
-                obs.y));
+            obs.draw(ctx);
         }
 
         // Score text
