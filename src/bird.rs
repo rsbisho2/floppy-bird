@@ -1,7 +1,7 @@
 
 use std::time;
 
-use tetra::{graphics::{mesh::{Mesh, GeometryBuilder, ShapeStyle}, Color}, Context, math::Vec2};
+use tetra::{graphics::{mesh::{Mesh, GeometryBuilder, ShapeStyle}, Color, Texture, Rectangle, ImageData, NineSlice, DrawParams}, Context, math::Vec2};
 
 pub struct Bird{
     pub position: (f32, f32),
@@ -14,7 +14,18 @@ pub struct Bird{
 
 impl Bird {
     pub fn draw (&self, ctx: &mut Context){
-        self.bird_sprite.draw(ctx, Vec2::new(self.position.0 as f32,1280.0 - self.position.1 as f32));
+        let sprite_sheet: ImageData = ImageData::from_file("./gfx/1.png").unwrap();
+
+        let bird_sprite = sprite_sheet.region(Rectangle::new(35,1,10,8));
+
+        let bird_texture = bird_sprite.to_texture(ctx).unwrap();
+        let mut params: DrawParams = DrawParams::new();
+        params.position = Vec2::new(self.position.0 as f32,1280.0 - self.position.1 as f32);
+        params.scale = Vec2::new(7.0,7.0);
+
+        bird_texture.draw(ctx, params);
+        
+            
     }
 
     pub fn jump(&mut self){
