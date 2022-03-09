@@ -10,17 +10,9 @@ use tetra::input::{self, Key};
 mod bird;
 use crate::bird::Bird;
 
-
-#[derive(PartialEq)]
-enum Orientation{
-    Top,
-    Bottom
-}
-
 struct GameState{
     bird: Bird,
     last_update: time::Instant,
-    last_jump: time::Instant,
     obstacles: Vec<Rectangle>,
     last_obstacle: time::Instant,
     game_over: bool,
@@ -28,29 +20,13 @@ struct GameState{
     last_score: time::Instant,
     high_score: u16
 }
-/* 
-impl ToString for Rectangle{
-    fn to_string(&self) -> String {
-        return "x:"+self.x + " y:" + self.y 
-        + " w:" + self.width + " h:" + self.height
-    }
-}
-*/
+
 impl GameState {
     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
 
-        let bird:Bird = Bird { 
-            position: (360.0,640.0), 
-            velocity: (0.0), 
-            acceleration: -0.0008,
-            bird_sprite: (GeometryBuilder::new()
-            // Background
-            .set_color(Color::rgb(1.0, 1.0, 0.0))
-            .circle(ShapeStyle::Fill, Vec2::zero(), 16.0)?
-            .build_mesh(ctx)?) };
+        let bird:Bird = Bird::new(ctx);
 
         let last_update = time::Instant::now();
-        let last_jump = time::Instant::now();
         let last_obstacle = time::Instant::now();
         let last_score = time::Instant::now();
 
@@ -62,7 +38,7 @@ impl GameState {
 
         let high_score = 0;
 
-        Ok(GameState{bird, last_update,last_jump, obstacles, last_obstacle, game_over, score, last_score, high_score})
+        Ok(GameState{bird, last_update, obstacles, last_obstacle, game_over, score, last_score, high_score})
     }
 
 }
@@ -73,16 +49,11 @@ impl State for GameState {
 
         if !self.game_over{
 
-            self.bird.position.1 += self.bird.velocity * self.last_update.elapsed().as_millis() as f32;
-            self.bird.velocity += self.bird.acceleration * self.last_update.elapsed().as_millis() as f32;
+            self.bird.update();
 
-            
-
-            if input::is_key_down(ctx, Key::Space) &&
-                self.last_jump.elapsed().as_millis() > 500.0 as u128{
-
-                self.bird.velocity += 1.0;
-                self.last_jump = time::Instant::now();
+            if input::is_key_down(ctx, Key::Space){
+                
+                self.bird.jump();
             }
 
             if self.last_obstacle.elapsed().as_secs() > 3 {
@@ -135,7 +106,6 @@ impl State for GameState {
                     self.score = 0;
                     self.bird.position.1 = 640.0;    
                     self.game_over = false;
-                    self.last_jump = time::Instant::now();
                     self.last_obstacle = time::Instant::now();
                     self.last_score = time::Instant::now();
                     self.bird.velocity = 0.0;
@@ -151,9 +121,6 @@ impl State for GameState {
         graphics::clear(ctx, Color::rgb(0.0, 0.0, 0.1));
 
         self.bird.draw(ctx);
-        
-
-        
 
         for obs in self.obstacles.iter_mut(){
             let obs_sprite : Mesh = GeometryBuilder::new()
@@ -182,19 +149,6 @@ impl State for GameState {
             game_over_text.draw(ctx, Vec2::new(300.0,300.0));
 
         }
-        /*
-        let mut obs_loc:f32 = 40.0;
-        for obs in self.obstacles.iter(){
-            let mut obs_text = Text::new(obs.to_string(),
-            Font::vector(ctx, "./fonts/OpenSans-Regular.ttf", 32.0)?);
-            obs_loc = obs_loc + 40.0;
-            obs_text.draw(ctx, Vec2::new(25.0,obs_loc));
-
-        }
-        */
-        let mut bird_pos_text = Text::new(self.bird.position.0.to_string() + ", " + &self.bird.position.1.to_string() ,
-        Font::vector(ctx, "./fonts/OpenSans-Regular.ttf", 32.0)?);
-        bird_pos_text.draw(ctx, Vec2::new(1000.0,40.0));
 
         Ok(())
     }
