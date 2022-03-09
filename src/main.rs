@@ -10,6 +10,9 @@ use tetra::input::{self, Key};
 mod bird;
 use crate::bird::Bird;
 
+mod background;
+use crate::background::Background;
+
 struct GameState{
     bird: Bird,
     last_update: time::Instant,
@@ -18,7 +21,8 @@ struct GameState{
     game_over: bool,
     score: u16,
     last_score: time::Instant,
-    high_score: u16
+    high_score: u16,
+    background: Background
 }
 
 impl GameState {
@@ -38,7 +42,9 @@ impl GameState {
 
         let high_score = 0;
 
-        Ok(GameState{bird, last_update, obstacles, last_obstacle, game_over, score, last_score, high_score})
+        let background = Background::new(ctx, 1.0);
+
+        Ok(GameState{bird, last_update, obstacles, last_obstacle, game_over, score, last_score, high_score, background})
     }
 
 }
@@ -50,6 +56,7 @@ impl State for GameState {
         if !self.game_over{
 
             self.bird.update();
+            self.background.update();
 
             if input::is_key_down(ctx, Key::Space){
                 
@@ -118,7 +125,7 @@ impl State for GameState {
 
     fn draw(&mut self, ctx: &mut Context) -> tetra::Result {
 
-        graphics::clear(ctx, Color::rgb(0.0, 0.0, 0.1));
+        self.background.draw(ctx);
 
         self.bird.draw(ctx);
 
