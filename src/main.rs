@@ -1,9 +1,7 @@
 use tetra::graphics::mesh::{GeometryBuilder, Mesh, ShapeStyle};
-use tetra::graphics::{self, Color, Rectangle};
 use tetra::math::Vec2;
 use tetra::{Context, ContextBuilder, State};
 use tetra::graphics::text::{Text,Font};
-use rand::Rng;
 use std::time;
 use tetra::input::{self, Key};
 
@@ -54,7 +52,6 @@ impl GameState {
 
 impl State for GameState {
     fn update(&mut self, ctx: &mut Context) -> tetra::Result {
-        let mut rng = rand::thread_rng();
 
         if !self.game_over{
 
@@ -148,6 +145,7 @@ impl State for GameState {
 
 fn main() -> tetra::Result {
     ContextBuilder::new("Floppy Bird", 1280, 1280)
+        .quit_on_escape(true)    
         .build()?
         .run(GameState::new)
 }
