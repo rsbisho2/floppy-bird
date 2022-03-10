@@ -1,16 +1,23 @@
 use std::time;
 
 use rand::Rng;
-use tetra::{graphics::{Rectangle, mesh::*, Color}, Context, math::Vec2};
+use tetra::{graphics::{Rectangle, mesh::*, Color, ImageData, Texture, DrawParams, NineSlice}, Context, math::Vec2};
 
 pub struct Obstacle{
     pub rect: Rectangle,
-    last_update: time::Instant
+    last_update: time::Instant,
+    obstacle_texture: Texture
 }
 
 impl Obstacle{
-    fn new()->Obstacle{
+    fn new(ctx: &mut Context)->Obstacle{
         let mut rng = rand::thread_rng();
+
+        let sprite_sheet: ImageData = ImageData::from_file("./gfx/1.png").unwrap();
+
+        let obstacle_sprite = sprite_sheet.region(Rectangle::new(3,9,12,3));
+
+        let obstacle_texture = obstacle_sprite.to_texture(ctx).unwrap();
         
         let obs_height = rng.gen_range(200.0 .. 800.0);
         Obstacle { rect:(Rectangle{
@@ -23,11 +30,12 @@ impl Obstacle{
             height: obs_height,
             width: 120.0
         }),
-        last_update: time::Instant::now()}
+        last_update: time::Instant::now(),
+        obstacle_texture}
     }
 
-    pub fn add_obstacle(obstacles: &mut Vec<Obstacle>){
-        obstacles.push(Obstacle::new());
+    pub fn add_obstacle(obstacles: &mut Vec<Obstacle>, ctx: &mut Context){
+        obstacles.push(Obstacle::new(ctx));
     }
 
     pub fn update(&mut self){
@@ -36,14 +44,13 @@ impl Obstacle{
     }
 
     pub fn draw(&self, ctx:&mut Context){
-        let obs_sprite : Mesh = GeometryBuilder::new()
-                .set_color(Color::rgb(0.392, 0.584, 0.929))
-                .rectangle(ShapeStyle::Fill, Rectangle::new(0.0, 0.0, self.rect.width, self.rect.height)).unwrap()
-            .build_mesh(ctx).unwrap();
 
+        let mut params: DrawParams = DrawParams::new();
+        params.position = Vec2::new(self.rect.x, self.rect.y);
 
-            obs_sprite.draw(ctx, Vec2::new(
-                self.rect.x,
-                self.rect.y));
+        let config = NineSlice::with_border(Rectangle { x: 0.0, y: 0.0, width: 12.0, height: 3.0 }, 2.0);
+
+        self.obstacle_texture.draw_nine_slice(ctx, &config, self.rect.width, self.rect.height, params);
+                
     }
 }

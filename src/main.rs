@@ -64,7 +64,7 @@ impl State for GameState {
             }
 
             if self.last_obstacle.elapsed().as_secs() > 3 {
-                Obstacle::add_obstacle(&mut self.obstacles);
+                Obstacle::add_obstacle(&mut self.obstacles, ctx);
                 self.last_obstacle = time::Instant::now();
             }
 
