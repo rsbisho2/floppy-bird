@@ -14,6 +14,9 @@ use crate::background::Background;
 mod obstacle;
 use crate::obstacle::Obstacle;
 
+mod obstacle_factory;
+use crate::obstacle_factory::ObstacleFactory;
+
 struct GameState{
     bird: Bird,
     last_update: time::Instant,
@@ -23,7 +26,8 @@ struct GameState{
     score: u16,
     last_score: time::Instant,
     high_score: u16,
-    background: Background
+    background: Background,
+    obstacle_factory: ObstacleFactory
 }
 
 impl GameState {
@@ -45,7 +49,9 @@ impl GameState {
 
         let background = Background::new(ctx, 1.0);
 
-        Ok(GameState{bird, last_update, obstacles, last_obstacle, game_over, score, last_score, high_score, background})
+        let obstacle_factory = ObstacleFactory::new();
+
+        Ok(GameState{bird, last_update, obstacles, last_obstacle, game_over, score, last_score, high_score, background, obstacle_factory})
     }
 
 }
@@ -63,10 +69,7 @@ impl State for GameState {
                 self.bird.jump();
             }
 
-            if self.last_obstacle.elapsed().as_secs() > 3 {
-                Obstacle::add_obstacle(&mut self.obstacles, ctx);
-                self.last_obstacle = time::Instant::now();
-            }
+            self.obstacle_factory.update(&mut self.obstacles, ctx);
 
             if self.last_score.elapsed().as_millis() > 250 {
                 self.score = self.score + 1;
