@@ -20,7 +20,7 @@ impl Bird {
 
         let bird_texture = bird_sprite.to_texture(ctx).unwrap();
         let mut params: DrawParams = DrawParams::new();
-        params.position = Vec2::new(self.position.0 as f32,1280.0 - self.position.1 as f32);
+        params.position = Vec2::new(self.position.0 - 35 as f32,1280.0 - self.position.1 - 25 as f32);
         params.scale = Vec2::new(7.0,7.0);
 
         bird_texture.draw(ctx, params);
@@ -32,7 +32,7 @@ impl Bird {
 
         if self.last_jump.elapsed().as_millis() > 500 as u128 {
             self.velocity += 1.0;
-            self.velocity = self.velocity.max(0.001);
+            self.velocity = self.velocity.min(0.5);
             self.last_jump = time::Instant::now();
         }
         

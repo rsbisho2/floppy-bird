@@ -1,7 +1,7 @@
 use std::time;
 
 use rand::Rng;
-use tetra::{graphics::{Rectangle, mesh::*, Color, ImageData, Texture, DrawParams, NineSlice}, Context, math::Vec2};
+use tetra::{graphics::{Rectangle, mesh::*, Color, ImageData, Texture, DrawParams, NineSlice}, Context, math::{Vec2, Rect}};
 
 pub struct Obstacle{
     pub rect: Rectangle,
@@ -34,12 +34,28 @@ impl Obstacle{
         obstacle_texture}
     }
 
-    pub fn add_obstacle(obstacles: &mut Vec<Obstacle>, ctx: &mut Context){
+    pub fn add_random_obstacle(obstacles: &mut Vec<Obstacle>, ctx: &mut Context){
         obstacles.push(Obstacle::new(ctx));
     }
 
+    pub fn add_obstacle(obstacles: &mut Vec<Obstacle>, ctx: &mut Context, rect: Rectangle){
+        let sprite_sheet: ImageData = ImageData::from_file("./gfx/1.png").unwrap();
+
+        let obstacle_sprite = sprite_sheet.region(Rectangle::new(3,9,12,3));
+
+        let obstacle_texture = obstacle_sprite.to_texture(ctx).unwrap();
+
+        let obs = Obstacle{
+            rect:rect,
+            last_update: time::Instant::now(),
+            obstacle_texture
+        };
+
+        obstacles.push(obs);
+    }
+
     pub fn update(&mut self){
-        self.rect.x -= self.last_update.elapsed().as_millis() as f32 * 0.1;
+        self.rect.x -= self.last_update.elapsed().as_millis() as f32 * 0.3;
         self.last_update = time::Instant::now();
     }
 

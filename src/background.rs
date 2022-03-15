@@ -59,7 +59,7 @@ impl Background{
 
     pub fn update(&mut self){
         let mut rng = rand::thread_rng();
-        if self.last_cloud.elapsed().as_millis() > 2500 {
+        if self.last_cloud.elapsed().as_millis() > 6000 {
             self.clouds.push(Cloud::new(self.cloud_texture.clone()));
             self.last_cloud = time::Instant::now();
         }
@@ -142,7 +142,7 @@ impl Cloud{
     fn new(cloud_texture: Texture) -> Cloud{
         let mut rng = rand::thread_rng();
         let position : f32 = 1300.0;
-        let speed: f32 = rng.gen_range(0.01.. 0.9);
+        let speed: f32 = rng.gen_range(0.01.. 0.2);
         let height : f32 = rng.gen_range(40.0..400.0);
         Cloud { position: position, height: height, speed: speed, last_update: time::Instant::now(), cloud_texture }
 

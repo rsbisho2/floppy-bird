@@ -64,6 +64,8 @@ impl State for GameState {
             self.bird.update();
             self.background.update();
 
+            self.obstacle_factory.difficulty = (self.score as f32 / 100.0).ceil() as u8;
+
             if input::is_key_down(ctx, Key::Space){
                 
                 self.bird.jump();
@@ -75,9 +77,6 @@ impl State for GameState {
                 self.score = self.score + 1;
                 self.last_score = time::Instant::now();
 
-                if self.score > self.high_score {
-                    self.high_score = self.score;
-                }
             }
 
             for obs in self.obstacles.iter_mut(){
@@ -85,18 +84,19 @@ impl State for GameState {
 
             }
 
-            self.obstacles.retain(|r| r.rect.x>0.1);
+            self.obstacles.retain(|r| r.rect.x>-120.0);
 
             // check for bird out of bounds
             if self.bird.position.1 < 0.0 || self.bird.position.1 > 1280.0{
                 self.game_over = true;
+                if self.score > self.high_score {
+                    self.high_score = self.score;
+                }
             }
 
             if self.obstacles.iter().any(|f| f.rect.contains_point(Vec2::new(self.bird.position.0, 1280.0-self.bird.position.1))){
-                self.game_over = true;
+                //self.game_over = true;
             }
-
-            
 
         }
 
