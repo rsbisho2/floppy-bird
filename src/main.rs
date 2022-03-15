@@ -95,7 +95,7 @@ impl State for GameState {
             }
 
             if self.obstacles.iter().any(|f| f.rect.contains_point(Vec2::new(self.bird.position.0, 1280.0-self.bird.position.1))){
-                //self.game_over = true;
+                self.game_over = true;
             }
 
         }

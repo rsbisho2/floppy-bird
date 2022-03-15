@@ -18,7 +18,7 @@ impl ObstacleFactory{
 
             let position_center : f32 = 100.0 * f32::cos(self.start_time.elapsed().as_secs_f32() * 0.63) + 1280.0 / 2.0;
 
-            let opening_width : f32 = 100.0;
+            let opening_width : f32 = 150.0;
 
             Obstacle::add_obstacle(obstacles, ctx, Rectangle::new(1280.0, 0.0, 120.0, position_center - opening_width));
             Obstacle::add_obstacle(obstacles, ctx, Rectangle::new(1280.0, position_center + opening_width,  120.0, 1280.0 - position_center + opening_width));
