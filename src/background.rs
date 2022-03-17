@@ -66,6 +66,10 @@ impl Background{
         for layer in self.layers.iter_mut(){
             layer.update();
         }
+
+        // Remove clouds off screen
+        self.clouds.retain(|r| r.position>-250.0);
+
         for cloud in self.clouds.iter_mut(){
             cloud.update();
         }
