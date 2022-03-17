@@ -1,3 +1,4 @@
+use tetra::audio::{Sound, self};
 use tetra::graphics::mesh::{GeometryBuilder, Mesh, ShapeStyle};
 use tetra::math::Vec2;
 use tetra::{Context, ContextBuilder, State};
@@ -27,11 +28,14 @@ struct GameState{
     last_score: time::Instant,
     high_score: u16,
     background: Background,
-    obstacle_factory: ObstacleFactory
+    obstacle_factory: ObstacleFactory,
+    game_over_sound: Sound
 }
 
 impl GameState {
     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
+
+        audio::set_master_volume(ctx, 1.0);
 
         let bird:Bird = Bird::new(ctx);
 
@@ -51,7 +55,9 @@ impl GameState {
 
         let obstacle_factory = ObstacleFactory::new();
 
-        Ok(GameState{bird, last_update, obstacles, last_obstacle, game_over, score, last_score, high_score, background, obstacle_factory})
+        let game_over_sound = Sound::new("./sound/fard.ogg")?;
+
+        Ok(GameState{bird, last_update, obstacles, last_obstacle, game_over, score, last_score, high_score, background, obstacle_factory, game_over_sound})
     }
 
 }
@@ -89,6 +95,10 @@ impl State for GameState {
             // check for bird out of bounds
             if self.bird.position.1 < 0.0 || self.bird.position.1 > 1280.0{
                 self.game_over = true;
+
+                
+                self.game_over_sound.play(ctx)?;
+
                 if self.score > self.high_score {
                     self.high_score = self.score;
                 }
@@ -96,6 +106,8 @@ impl State for GameState {
 
             if self.obstacles.iter().any(|f| f.rect.contains_point(Vec2::new(self.bird.position.0, 1280.0-self.bird.position.1))){
                 self.game_over = true;
+
+                self.game_over_sound.play(ctx)?;
             }
 
         }
