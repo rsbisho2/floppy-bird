@@ -29,7 +29,8 @@ struct GameState{
     high_score: u16,
     background: Background,
     obstacle_factory: ObstacleFactory,
-    game_over_sound: Sound
+    game_over_sound: Sound,
+    flap_sound: Sound
 }
 
 impl GameState {
@@ -60,7 +61,10 @@ impl GameState {
         let game_music = Sound::new("./sound/Monkeys-Spinning-Monkeys.mp3")?;
         game_music.repeat(ctx);
 
-        Ok(GameState{bird, last_update, obstacles, last_obstacle, game_over, score, last_score, high_score, background, obstacle_factory, game_over_sound})
+        let flap_sound = Sound::new("./sound/bird_flap.ogg")?;
+        
+
+        Ok(GameState{bird, last_update, obstacles, last_obstacle, game_over, score, last_score, high_score, background, obstacle_factory, game_over_sound, flap_sound})
     }
 
 }
@@ -78,6 +82,7 @@ impl State for GameState {
             if input::is_key_down(ctx, Key::Space){
                 
                 self.bird.jump();
+                self.flap_sound.play_with(ctx, 0.3, 1.4)?;
             }
 
             self.obstacle_factory.update(&mut self.obstacles, ctx);
