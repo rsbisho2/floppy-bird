@@ -57,6 +57,9 @@ impl GameState {
 
         let game_over_sound = Sound::new("./sound/fard.ogg")?;
 
+        let game_music = Sound::new("./sound/Monkeys-Spinning-Monkeys.mp3")?;
+        game_music.repeat(ctx);
+
         Ok(GameState{bird, last_update, obstacles, last_obstacle, game_over, score, last_score, high_score, background, obstacle_factory, game_over_sound})
     }
 
@@ -108,6 +111,10 @@ impl State for GameState {
                 self.game_over = true;
 
                 self.game_over_sound.play(ctx)?;
+
+                if self.score > self.high_score {
+                    self.high_score = self.score;
+                }
             }
 
         }
