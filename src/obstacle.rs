@@ -6,7 +6,8 @@ use tetra::{graphics::{Rectangle, mesh::*, Color, ImageData, Texture, DrawParams
 pub struct Obstacle{
     pub rect: Rectangle,
     last_update: time::Instant,
-    obstacle_texture: Texture
+    obstacle_texture: Texture,
+    opening_texture: Texture
 }
 
 impl Obstacle{
@@ -16,8 +17,10 @@ impl Obstacle{
         let sprite_sheet: ImageData = ImageData::from_file("./gfx/1.png").unwrap();
 
         let obstacle_sprite = sprite_sheet.region(Rectangle::new(3,9,12,3));
+        let opening_sprite = sprite_sheet.region(Rectangle::new(1,1,16,6));
 
         let obstacle_texture = obstacle_sprite.to_texture(ctx).unwrap();
+        let opening_texture = opening_sprite.to_texture(ctx).unwrap();
         
         let obs_height = rng.gen_range(200.0 .. 800.0);
         Obstacle { rect:(Rectangle{
@@ -31,7 +34,8 @@ impl Obstacle{
             width: 120.0
         }),
         last_update: time::Instant::now(),
-        obstacle_texture}
+        obstacle_texture,
+        opening_texture}
     }
 
     pub fn add_random_obstacle(obstacles: &mut Vec<Obstacle>, ctx: &mut Context){
@@ -42,13 +46,16 @@ impl Obstacle{
         let sprite_sheet: ImageData = ImageData::from_file("./gfx/1.png").unwrap();
 
         let obstacle_sprite = sprite_sheet.region(Rectangle::new(3,9,12,3));
+        let opening_sprite = sprite_sheet.region(Rectangle::new(1,1,16,6));
 
         let obstacle_texture = obstacle_sprite.to_texture(ctx).unwrap();
+        let opening_texture = opening_sprite.to_texture(ctx).unwrap();
 
         let obs = Obstacle{
             rect:rect,
             last_update: time::Instant::now(),
-            obstacle_texture
+            obstacle_texture,
+            opening_texture
         };
 
         obstacles.push(obs);
@@ -67,6 +74,18 @@ impl Obstacle{
         let config = NineSlice::with_border(Rectangle { x: 0.0, y: 0.0, width: 12.0, height: 3.0 }, 2.0);
 
         self.obstacle_texture.draw_nine_slice(ctx, &config, self.rect.width, self.rect.height, params);
+
+        let mut params: DrawParams = DrawParams::new();
+
+        let y: f32 = match self.rect.y {
+            0.0 => self.rect.height - 8.5*6.0,
+            _ => self.rect.y
+        };
+        params.position = Vec2::new(self.rect.x - 8.0, y);
+        params.scale = Vec2::new(8.5, 8.5);
+
+
+        self.opening_texture.draw(ctx, params);
                 
     }
 }
